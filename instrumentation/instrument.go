@@ -47,10 +47,9 @@ func InstrumentHandler(handlerName string, handler http.Handler) http.HandlerFun
 // InstrumentHandler is.
 func InstrumentHandlerFunc(handlerName string, handlerFunc func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
 	return InstrumentHandlerFuncWithOpts(
-		prometheus.SummaryOpts{
+		prometheus.Opts{
 			Subsystem:   "http",
 			ConstLabels: prometheus.Labels{"handler": handlerName},
-			Objectives:  map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
 		},
 		handlerFunc,
 	)
@@ -84,7 +83,7 @@ func InstrumentHandlerFunc(handlerName string, handlerFunc func(http.ResponseWri
 //
 // Deprecated: InstrumentHandlerWithOpts is deprecated for the same reasons as
 // InstrumentHandler is.
-func InstrumentHandlerWithOpts(opts prometheus.SummaryOpts, handler http.Handler) http.HandlerFunc {
+func InstrumentHandlerWithOpts(opts prometheus.Opts, handler http.Handler) http.HandlerFunc {
 	return InstrumentHandlerFuncWithOpts(opts, handler.ServeHTTP)
 }
 
@@ -97,7 +96,7 @@ var instLabels = []string{"method", "code"}
 //
 // Deprecated: InstrumentHandlerFuncWithOpts is deprecated for the same reasons
 // as InstrumentHandler is.
-func InstrumentHandlerFuncWithOpts(opts prometheus.SummaryOpts, handlerFunc func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
+func InstrumentHandlerFuncWithOpts(opts prometheus.Opts, handlerFunc func(http.ResponseWriter, *http.Request)) http.HandlerFunc {
 	inFlightReq := prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: opts.Namespace,
@@ -160,9 +159,14 @@ func InstrumentHandlerFuncWithOpts(opts prometheus.SummaryOpts, handlerFunc func
 	//	}
 	//}
 
-	opts.Name = "response_size_bytes"
-	opts.Help = "The HTTP response sizes in bytes."
-	resSz := prometheus.NewSummary(opts)
+	resSz := prometheus.NewSummary(prometheus.SummaryOpts{
+		Namespace:   opts.Namespace,
+		Subsystem:   opts.Subsystem,
+		Name:        "response_size_bytes",
+		Help:        "The HTTP response sizes in bytes.",
+		ConstLabels: opts.ConstLabels,
+		Objectives:  map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
+	})
 	if err := prometheus.Register(resSz); err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			resSz = are.ExistingCollector.(prometheus.Summary)
