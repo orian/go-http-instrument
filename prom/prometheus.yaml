@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 15s
+  external_labels:
+    monitor: 'http-example'
+
+rule_files:
+  - 'prometheus.rules'
+
+scrape_configs:
+#  - job_name: 'prometheus'
+#    static_configs:
+#      - targets: ['localhost:9090']
+#
+  - job_name: 'http-server'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['httpexample:8080']
