@@ -1,13 +1,13 @@
 package main
 
 import (
+	"github.com/orian/go-http-instrument/instrumentation"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"log"
 	"net/http"
 	"strconv"
 	"time"
-	"github.com/orian/instrumentation"
 )
 
 func ParamFunc(w http.ResponseWriter, req *http.Request) {

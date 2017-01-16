@@ -102,8 +102,8 @@ func InstrumentHandlerFuncWithOpts(opts prometheus.SummaryOpts, handlerFunc func
 		prometheus.GaugeOpts{
 			Namespace: opts.Namespace,
 			Subsystem: opts.Subsystem,
-			Name: "inflight_requests",
-			Help: "In-flight HTTP requests.",
+			Name:      "inflight_requests",
+			Help:      "In-flight HTTP requests.",
 		},
 		[]string{"method"},
 	)
@@ -133,12 +133,11 @@ func InstrumentHandlerFuncWithOpts(opts prometheus.SummaryOpts, handlerFunc func
 		}
 	}
 
-
 	reqDur := prometheus.NewHistogram(prometheus.HistogramOpts{
 		Namespace: opts.Namespace,
 		Subsystem: opts.Subsystem,
-		Name: "request_duration_seconds",
-		Help: "The HTTP request latencies in seconds.",
+		Name:      "request_duration_seconds",
+		Help:      "The HTTP request latencies in seconds.",
 		Buckets: []float64{0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7,
 			0.8, 0.9, 1., 2., 5., 10., 20., 30., 40., 50.},
 	})
@@ -150,16 +149,16 @@ func InstrumentHandlerFuncWithOpts(opts prometheus.SummaryOpts, handlerFunc func
 		}
 	}
 
-	opts.Name = "request_size_bytes"
-	opts.Help = "The HTTP request sizes in bytes."
-	reqSz := prometheus.NewSummary(opts)
-	if err := prometheus.Register(reqSz); err != nil {
-		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
-			reqSz = are.ExistingCollector.(prometheus.Summary)
-		} else {
-			panic(err)
-		}
-	}
+	//opts.Name = "request_size_bytes"
+	//opts.Help = "The HTTP request sizes in bytes."
+	//reqSz := prometheus.NewSummary(opts)
+	//if err := prometheus.Register(reqSz); err != nil {
+	//	if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
+	//		reqSz = are.ExistingCollector.(prometheus.Summary)
+	//	} else {
+	//		panic(err)
+	//	}
+	//}
 
 	opts.Name = "response_size_bytes"
 	opts.Help = "The HTTP response sizes in bytes."
@@ -180,7 +179,7 @@ func InstrumentHandlerFuncWithOpts(opts prometheus.SummaryOpts, handlerFunc func
 		defer f.Dec()
 
 		delegate := &responseWriterDelegator{ResponseWriter: w}
-		out := computeApproximateRequestSize(r)
+		//out := computeApproximateRequestSize(r)
 
 		_, cn := w.(http.CloseNotifier)
 		_, fl := w.(http.Flusher)
@@ -199,7 +198,7 @@ func InstrumentHandlerFuncWithOpts(opts prometheus.SummaryOpts, handlerFunc func
 		reqCnt.WithLabelValues(method, code).Inc()
 		reqDur.Observe(elapsed)
 		resSz.Observe(float64(delegate.written))
-		reqSz.Observe(float64(<-out))
+		//reqSz.Observe(float64(<-out))
 	})
 }
 
